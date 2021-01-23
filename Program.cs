@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Collections.Generic;
 using System.Linq;
 using static System.Console;
 using static Utils.Utilities;
@@ -69,6 +68,7 @@ namespace QuizApp
                 // 2. CREATE NEW QUIZ
                 case ConsoleKey.NumPad2:
                 case ConsoleKey.D2:
+                // QuizHandler.CreateQuiz();
                 using (var db = new QuizAppContext()) {
                     string quizTitle;
 
@@ -101,7 +101,7 @@ namespace QuizApp
                             questionText = ReadLine();
                         } while(!IsValidString(questionText));
                         
-                        // Find Quiz 
+                        // Find Quiz to add Question to
                         var newQuiz = db.Quizzes
                             .Where(q => q.Title == quizTitle)
                             .First();
@@ -120,6 +120,7 @@ namespace QuizApp
                         bool isCorrect;
                         while(i<4)
                         {
+                            // Ask for valid Alternative Text
                             do
                             {
                                 Clear();
@@ -129,6 +130,7 @@ namespace QuizApp
                                 alternativeText = ReadLine();
                             } while(!IsValidString(alternativeText));
 
+                            // Ask for valid Boolean(Is Alternative true/false?)
                             do
                             {
                                 Clear();
@@ -139,21 +141,31 @@ namespace QuizApp
                                 isCorrectInput = ReadLine();
                             } while(!Boolean.TryParse(isCorrectInput, out isCorrect));
 
-                            // PROGRAM BREAKS HERE
+                            // Find Question to add Alternatives to
                             var newQuestion = db.Questions
                                 .Where(q => q.QuestionText == questionText)
                                 .First();
 
+                            // Save Alternatives to DB
                             newQuestion.Alternatives.Add(new Alternative() {
                                 AlternativeText = alternativeText,
                                 IsCorrect = isCorrect
                             });
+                            db.SaveChanges();
 
                             i++;
                         }
 
-                        WriteLine($"Question Summary: \n Question: {questionText}\n");
 
+
+                        // QUESTION SUMMARY
+                        Clear();
+                        TextColor(ConsoleColor.DarkGreen);
+                        WriteLine($"# Quiz Summary: \n");
+                        ResetColor();
+                        WriteLine($"## Quiz Name: \n{quizTitle}\n");
+
+                        // Get Quiz Id and Quiz Questions
                         var createdQuizId = db.Quizzes
                             .Where(q => q.Title == quizTitle)
                             .First().Id;
@@ -162,31 +174,33 @@ namespace QuizApp
                                 .Where(q => q.QuizId == createdQuizId)
                                 .OrderBy(q => q.Id);
 
-                        WriteLine($"Created Quiz ID: {createdQuizId}");
-
-                        WriteLine("Quiz Questions");
+                        WriteLine("## Quiz Questions:");
                         foreach(var q in quizQuestions)
                         {
-                            WriteLine(q.QuestionText);
+                            WriteLine($"Question: {q.QuestionText}");
+                            
+                            // Get Question Alternatives
+                            var questionAnswers = db.Alternatives
+                                .Where(a => a.QuestionId == q.Id)
+                                .OrderBy(a => a.Id);
+                            
+                            WriteLine("\n## Question Alternatives:");
+                            foreach(var a in questionAnswers)
+                            {
+                                WriteLine($"Alternative: {a.AlternativeText}, Is Correct: {a.IsCorrect}");
+                            }
+
+                            WriteLine("");
                         }
 
-                        // var newQuiz = db.Quizzes
-                        //     .Where(q => q.Title == quizTitle)
-                        //     .First();
-
-                        // foreach(var alt in question.Alternatives)
-                        // {          
-                        //     WriteLine($"Alternative: {alt.AlternativeText}\nIs correct?: {alt.IsCorrect}\n");
-                        // }
 
 
-                        // Give option to add new question or save quiz
+                        // ADD NEW QUESTION OR SAVE QUIZ
                         WriteLine("1. New Question");
                         WriteLine("2. Save Quiz");
                         userInput = ReadKey();
                     } while(userInput.Key != ConsoleKey.D2);
 
-                    // WriteLine(newQuiz.Questions.Count);
                     ReadLine();
                 }
                     break;
@@ -199,8 +213,6 @@ namespace QuizApp
                     break;
 
                 default:
-                    WriteLine(userInput.Key.ToString()); // DEBUG can delete
-                    ReadLine();
                     break;
             }
         }
