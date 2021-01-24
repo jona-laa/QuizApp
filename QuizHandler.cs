@@ -2,6 +2,9 @@ using System;
 using System.Linq;
 using static System.Console;
 using static Utils.Utilities;
+using System.Threading;
+
+
 
 namespace QuizApp
 {
@@ -30,14 +33,56 @@ namespace QuizApp
 
 
 
-        /// <summary>
-        /// Delete Quiz
-        /// </summary>
-        public static void DeleteQuiz()
-        {
-            WriteLine("Hello from Delete");
-            ReadLine();
-        }
+        // /// <summary>
+        // /// Delete Quiz
+        // /// </summary>
+        // public static void DeleteQuiz()
+        // {
+        //     string userInputString;
+        //     userInputString = ReadLine();
+
+        //     if(userInputString.ToUpper() == "C")
+        //     {                
+        //         RunQuizApp();
+        //     } 
+        //     else {
+        //         try {
+        //             using (var db = new QuizAppContext()) {
+        //                 // Get Quiz to Remove
+        //                 var quizToRemove = db.Quizzes
+        //                     .Where(q => q.Id == Int16.Parse(userInputString))
+        //                     .First();
+
+        //                 // Get Quiz Questions to Remove
+        //                 var questionsToRemove = db.Questions
+        //                     .Where(q => q.QuizId == quizToRemove.Id);
+                        
+        //                 db.Remove(quizToRemove);
+                        
+        //                 // Remove every Question together with its Alternatives
+        //                 foreach(var question in questionsToRemove)
+        //                 {
+        //                     var alternativesToRemove = db.Alternatives
+        //                         .Where(a => a.QuestionId == question.Id);
+                            
+        //                     db.Remove(question);
+
+        //                     foreach(var alternative in alternativesToRemove)
+        //                     {
+        //                         db.Remove(alternative);
+        //                     }
+        //                 }
+                        
+        //                 db.SaveChanges();
+        //                 WriteLine("\n\nDeleting Quiz...");
+        //                 Thread.Sleep(1000); 
+        //             }
+        //         } 
+        //         catch {
+        //             WriteLine("Something went wrong");
+        //         }
+        //     }
+        // }
 
 
 
@@ -126,10 +171,7 @@ namespace QuizApp
                                 .First();
 
                             // Save Alternatives to DB
-                            newQuestion.Alternatives.Add(new Alternative() {
-                                AlternativeText = alternativeText.ToString(),
-                                IsCorrect = isCorrect
-                            });
+                            newQuestion.Alternatives.Add(new Alternative(alternativeText, isCorrect));
                             db.SaveChanges();
 
                             i++;

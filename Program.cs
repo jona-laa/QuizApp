@@ -54,20 +54,96 @@ namespace QuizApp
                     // Ask for menu chouce
                     userInputKey = ReadKey();
 
-                    // switch to handle input
                     switch(userInputKey.Key)
                     {
+                        // 1. PLAY QUIZ
                         case ConsoleKey.D1:
                             Clear();
 
-                            WriteLine("# PLAY QUIZ");
                             WriteLine("Choose Quiz Id from the list below\n");
-                            WriteLine("## QUIZZES");
 
                             QuizHandler.GetQuizzes();
 
+                            WriteLine("\nC. Cancel\n");
+
                             // Ask for quiz ID
                             userInputString = ReadLine();
+
+                            if(userInputString.ToUpper() == "C")
+                            {                
+                                RunQuizApp();
+                            }
+                            else
+                            {
+                                int quizScore = 0;
+                                try
+                                {
+                                    using (var db = new QuizAppContext()) {
+                                        // Get Quiz Id and Quiz Questions
+                                        var quiz = db.Quizzes
+                                            .Where(q => q.Id == Int16.Parse(userInputString))
+                                            .First();
+
+
+                                        var quizQuestions = db.Questions
+                                            .Where(q => q.QuizId == quiz.Id)
+                                            .OrderBy(q => q.Id).ToList();
+
+                                        WriteLine("## Quiz Questions:");
+                                        foreach(var q in quizQuestions)
+                                        {
+                                            Clear();
+                                            WriteLine($"## Question {quizQuestions.IndexOf(q) + 1} / {quizQuestions.Count}\n");
+                                            WriteLine($"{q.QuestionText}\n");
+                                            
+                                            // Get Question Alternatives
+                                            var questionAlternatives = db.Alternatives
+                                                .Where(a => a.QuestionId == q.Id)
+                                                .OrderBy(a => a.Id).ToList();
+                                            
+                                            foreach(var a in questionAlternatives)
+                                            {
+                                                WriteLine($"[{questionAlternatives.IndexOf(a)}] {a.AlternativeText}");
+                                            }
+
+                                            WriteLine();
+                                            Write("Answer: ");
+                                            userInputString = ReadLine();
+
+                                            if (questionAlternatives[Int16.Parse(userInputString)].IsCorrect) {
+                                                WriteLine($"\n{questionAlternatives[Int16.Parse(userInputString)].AlternativeText} is the right Answer!\n");
+                                                quizScore++;
+                                            }
+                                            else 
+                                            {
+                                                WriteLine("Wrong Answer!\n");
+                                            };
+
+                                            if (quizQuestions.IndexOf(q) + 1 != quizQuestions.Count)
+                                            {
+                                                WriteLine("[Enter] Next Question");
+                                            }
+                                            else
+                                            {
+                                                WriteLine("[Enter] See Quiz Summary");
+                                            }
+                                            
+                                            ReadLine();
+                                        }
+                                        
+                                        Clear();
+                                        WriteLine("QUIZ SUMMARY\n");
+                                        WriteLine($"Quiz Score: {quizScore}/{quizQuestions.Count()}\n");
+                                        WriteLine("[Enter] Menu");
+                                        ReadLine();
+                                    }
+                                }
+                                catch
+                                {
+                                    WriteLine("Something went wrong");
+                                }
+                            } 
+
                             break;
 
                         case ConsoleKey.D2:
@@ -91,15 +167,18 @@ namespace QuizApp
                             else {
                                 try {
                                     using (var db = new QuizAppContext()) {
+                                        // Get Quiz to Remove
                                         var quizToRemove = db.Quizzes
-                                        .Where(q => q.Id == Int16.Parse(userInputString))
-                                        .First();
+                                            .Where(q => q.Id == Int16.Parse(userInputString))
+                                            .First();
 
+                                        // Get Quiz Questions to Remove
                                         var questionsToRemove = db.Questions
                                             .Where(q => q.QuizId == quizToRemove.Id);
                                         
                                         db.Remove(quizToRemove);
                                         
+                                        // Remove every Question together with its Alternatives
                                         foreach(var question in questionsToRemove)
                                         {
                                             var alternativesToRemove = db.Alternatives
@@ -219,10 +298,7 @@ namespace QuizApp
                                 .First();
 
                             // Save Alternatives to DB
-                            newQuestion.Alternatives.Add(new Alternative() {
-                                AlternativeText = alternativeText,
-                                IsCorrect = isCorrect
-                            });
+                            newQuestion.Alternatives.Add(new Alternative(alternativeText, isCorrect));
                             db.SaveChanges();
 
                             i++;
