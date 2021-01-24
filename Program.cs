@@ -20,7 +20,8 @@ namespace QuizApp
 
         public static void RunQuizApp()
         {
-            ConsoleKeyInfo userInput;
+            ConsoleKeyInfo userInputKey;
+            string userInputString;
 
             Clear();
             TextColor(ConsoleColor.DarkGreen);
@@ -36,31 +37,102 @@ namespace QuizApp
             WriteLine("Q. Quit");
             ResetColor();
 
-            userInput = Console.ReadKey();
+            userInputKey = Console.ReadKey();
             
-            switch(userInput.Key)
+            switch(userInputKey.Key)
             {
                 // 1. QUIZZES
                 case ConsoleKey.NumPad1:
                 case ConsoleKey.D1:
                     Clear();
-                    WriteLine("Quizzes List");
+                    WriteLine("QUIZZES\n");
+                    WriteLine("# MENU");
+                    WriteLine("1. Play Quiz");
+                    WriteLine("2. Delete Quiz\n");
+                    WriteLine("C. Cancel");
                     
-                    // Get Existing Quizzes
-                    try {
-                        using (var db = new QuizAppContext()) {
-                            var quizzes = db.Quizzes
-                            .OrderBy(q => q.Id);
+                    // Ask for menu chouce
+                    userInputKey = ReadKey();
+
+                    // switch to handle input
+                    switch(userInputKey.Key)
+                    {
+                        case ConsoleKey.D1:
+                            Clear();
+
+                            WriteLine("# PLAY QUIZ");
+                            WriteLine("Choose Quiz Id from the list below\n");
+                            WriteLine("## QUIZZES");
+
+                            QuizHandler.GetQuizzes();
+
+                            // Ask for quiz ID
+                            userInputString = ReadLine();
+                            break;
+
+                        case ConsoleKey.D2:
+                            Clear();
                             
-                            foreach(var q in quizzes) {
-                                WriteLine(q.Title);
+                            WriteLine("# DELETE QUIZ");
+                            WriteLine("Choose Quiz Id from the list below\n");
+                            WriteLine("## QUIZZES");
+
+                            QuizHandler.GetQuizzes();
+
+                            WriteLine("\nC. Cancel\n");
+
+                            // Ask for quiz ID
+                            userInputString = ReadLine();
+                            // QuizHandler.DeleteQuiz();
+                            if(userInputString.ToUpper() == "C")
+                            {                
+                                RunQuizApp();
+                            } 
+                            else {
+                                try {
+                                    using (var db = new QuizAppContext()) {
+                                        var quizToRemove = db.Quizzes
+                                        .Where(q => q.Id == Int16.Parse(userInputString))
+                                        .First();
+
+                                        var questionsToRemove = db.Questions
+                                            .Where(q => q.QuizId == quizToRemove.Id);
+                                        
+                                        db.Remove(quizToRemove);
+                                        
+                                        foreach(var question in questionsToRemove)
+                                        {
+                                            var alternativesToRemove = db.Alternatives
+                                                .Where(a => a.QuestionId == question.Id);
+                                            
+                                            db.Remove(question);
+
+                                            foreach(var alternative in alternativesToRemove)
+                                            {
+                                                db.Remove(alternative);
+                                            }
+                                        }
+                                        
+                                        db.SaveChanges();
+                                        WriteLine("\n\nDeleting Quiz...");
+                                        Thread.Sleep(1000); 
+                                    }
+                                } 
+                                catch {
+                                    WriteLine("Something went wrong");
+                                }
                             }
-                        }
-                    } 
-                    catch {
-                        WriteLine("There are no quizzes at this moment");
+                            break;
+                        
+                        case ConsoleKey.C:
+                            RunQuizApp();
+                            break;
+
+                        default:
+                            break;
                     }
-                    ReadLine();
+
+
                     break;
 
 
@@ -198,8 +270,8 @@ namespace QuizApp
                         // ADD NEW QUESTION OR SAVE QUIZ
                         WriteLine("1. New Question");
                         WriteLine("2. Save Quiz");
-                        userInput = ReadKey();
-                    } while(userInput.Key != ConsoleKey.D2);
+                        userInputKey = ReadKey();
+                    } while(userInputKey.Key != ConsoleKey.D2);
 
                     ReadLine();
                 }
