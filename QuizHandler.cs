@@ -286,6 +286,9 @@ namespace QuizApp
 
 
 
+        /// <summary>
+        /// Play Quiz
+        /// </summary>
         public static void PlayQuiz()
         {
             char userInputKey;
