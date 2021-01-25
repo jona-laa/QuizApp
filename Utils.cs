@@ -45,7 +45,7 @@ namespace Utils
             Int16 inputNumber;
             if (Int16.TryParse(key.ToString(), out inputNumber))
             {
-                return (inputNumber >= 0 && inputNumber <= maxInput) ? true : false;
+                return (inputNumber >= 1 && inputNumber <= maxInput) ? true : false;
             }
             else if (key.ToString().ToUpper() == cancelBtn)
             {

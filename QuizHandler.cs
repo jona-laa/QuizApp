@@ -300,7 +300,7 @@ namespace QuizApp
                     if (quizzes.Count != 0)
                     {
                         foreach(var q in quizzes) {
-                            WriteLine($"[{quizzes.IndexOf(q)}] {q.Title}");
+                            WriteLine($"[{quizzes.IndexOf(q) + 1}] {q.Title}");
                         }
                     }
                     else
@@ -317,7 +317,7 @@ namespace QuizApp
 
                 // Ask for Quiz Index
                 userInputKey = ReadKey();
-            } while(!IsValidChoice(userInputKey.KeyChar, quizzes.Count - 1, "C"));
+            } while(!IsValidChoice(userInputKey.KeyChar, quizzes.Count, "C"));
 
             // CANCEL
             if(userInputKey.KeyChar.ToString().ToUpper() == "C")
@@ -334,7 +334,7 @@ namespace QuizApp
                     {
                         // Get Quiz Id...
                         var quiz = db.Quizzes
-                            .Where(q => q.Id == quizzes[Int16.Parse(userInputKey.KeyChar.ToString())].Id)
+                            .Where(q => q.Id == quizzes[Int16.Parse(userInputKey.KeyChar.ToString()) - 1].Id)
                             .First();
 
                         // ...and Quiz Questions
@@ -357,7 +357,7 @@ namespace QuizApp
                                 
                                 foreach(var a in questionAlternatives)
                                 {
-                                    WriteLine($"[{questionAlternatives.IndexOf(a)}] {a.AlternativeText}");
+                                    WriteLine($"[{questionAlternatives.IndexOf(a) + 1}] {a.AlternativeText}");
                                 }
 
                                 WriteColoredLine("\nQ. Quit to Menu", ConsoleColor.DarkRed);
@@ -366,7 +366,7 @@ namespace QuizApp
                                 WriteLine();
                                 Write("Answer: ");
                                 userInputKey = ReadKey();
-                            } while(!IsValidChoice(userInputKey.KeyChar, 3, "Q"));
+                            } while(!IsValidChoice(userInputKey.KeyChar, 4, "Q"));
 
                             if (userInputKey.KeyChar.ToString().ToUpper() == "Q")
                             {
@@ -377,13 +377,13 @@ namespace QuizApp
 
 
                             // Give feedback and points
-                            if (questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].IsCorrect) {
-                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].AlternativeText} is the Right Answer!\n", ConsoleColor.DarkGreen);
+                            if (questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString()) - 1].IsCorrect) {
+                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString()) -1].AlternativeText} is the Right Answer!\n", ConsoleColor.DarkGreen);
                                 quizScore++;
                             }
                             else 
                             {
-                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].AlternativeText} is the Wrong Answer!\n", ConsoleColor.DarkRed);
+                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString()) -1].AlternativeText} is the Wrong Answer!\n", ConsoleColor.DarkRed);
                             };
 
                             if (quizQuestions.IndexOf(q) + 1 != quizQuestions.Count)
