@@ -140,11 +140,15 @@ namespace QuizApp
                     }
 
 
+                    do
+                    {
+                        // ADD NEW QUESTION OR SAVE QUIZ
+                        WriteLine("1. New Question");
+                        WriteLine("2. Save Quiz");
+                        userInputKey = ReadKey();
+                        WriteLine(userInputKey.KeyChar);
+                    } while (!IsValidChoice(userInputKey.KeyChar, 2, "C"));
 
-                    // ADD NEW QUESTION OR SAVE QUIZ
-                    WriteLine("1. New Question");
-                    WriteLine("2. Save Quiz");
-                    userInputKey = ReadKey();
                 } while(userInputKey.KeyChar.ToString().ToUpper() != "2");
 
                 Clear();
@@ -194,7 +198,6 @@ namespace QuizApp
         /// </summary>
         public static void DeleteQuiz()
         {
-            // ConsoleKeyInfo userInputKey;
             char userInputKey;
             List<Quiz> quizzes;
 
