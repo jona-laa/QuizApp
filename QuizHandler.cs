@@ -140,13 +140,12 @@ namespace QuizApp
                     }
 
 
-                    do
-                    {
                         // ADD NEW QUESTION OR SAVE QUIZ
                         WriteLine("1. New Question");
                         WriteLine("2. Save Quiz");
+                    do
+                    {
                         userInputKey = ReadKey();
-                        WriteLine(userInputKey.KeyChar);
                     } while (!IsValidChoice(userInputKey.KeyChar, 2, "C"));
 
                 } while(userInputKey.KeyChar.ToString().ToUpper() != "2");
