@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
-using System.Linq;
 using static System.Console;
 using static Utils.Utilities;
+
 
 
 namespace QuizApp
@@ -21,186 +21,54 @@ namespace QuizApp
         public static void RunQuizApp()
         {
             ConsoleKeyInfo userInputKey;
-            string userInputString;
 
             Clear();
             TextColor(ConsoleColor.DarkGreen);
-            // TITLE
             WriteLine("C O N S O L E   Q U I Z   A P P");
-            ResetColor();
-            
+            ResetColor();    
             WriteLine("\n# M E N U");
             WriteLine("1. Quizzes");
             WriteLine("2. Create New Quiz\n");
-
             TextColor(ConsoleColor.DarkRed);
             WriteLine("Q. Quit");
             ResetColor();
 
             userInputKey = Console.ReadKey();
             
+            // QUIZZES, CREATE, OR QUIT
             switch(userInputKey.Key)
             {
-                // 1. QUIZZES
+                // MENU - 1. QUIZZES
                 case ConsoleKey.NumPad1:
                 case ConsoleKey.D1:
-                    Clear();
-                    WriteLine("QUIZZES\n");
-                    WriteLine("# MENU");
-                    WriteLine("1. Play Quiz");
-                    WriteLine("2. Delete Quiz\n");
-                    WriteLine("C. Cancel");
-                    
-                    // Ask for menu chouce
-                    userInputKey = ReadKey();
 
+                    // Ask for valid input
+                    do
+                    {
+                        Clear();
+                        TextColor(ConsoleColor.DarkGreen);
+                        WriteLine("QUIZZES\n");
+                        ResetColor();
+                        WriteLine("# MENU");
+                        WriteLine("1. Play Quiz");
+                        WriteLine("2. Delete Quiz\n");
+                        TextColor(ConsoleColor.DarkRed);
+                        WriteLine("C. Cancel");
+                        ResetColor();
+                        userInputKey = ReadKey();
+                    } while(!IsValidChoice(userInputKey.KeyChar, 2, "C"));
+
+                    // PLAY, DELETE OR CANCEL
                     switch(userInputKey.Key)
                     {
-                        // 1. PLAY QUIZ
+                        // QUIZZES - 1. PLAY QUIZ
                         case ConsoleKey.D1:
-                            Clear();
-
-                            WriteLine("Choose Quiz Id from the list below\n");
-
-                            QuizHandler.GetQuizzes();
-
-                            WriteLine("\nC. Cancel\n");
-
-                            // Ask for quiz ID
-                            userInputString = ReadLine();
-
-                            if(userInputString.ToUpper() == "C")
-                            {                
-                                RunQuizApp();
-                            }
-                            else
-                            {
-                                int quizScore = 0;
-                                try
-                                {
-                                    using (var db = new QuizAppContext()) {
-                                        // Get Quiz Id and Quiz Questions
-                                        var quiz = db.Quizzes
-                                            .Where(q => q.Id == Int16.Parse(userInputString))
-                                            .First();
-
-
-                                        var quizQuestions = db.Questions
-                                            .Where(q => q.QuizId == quiz.Id)
-                                            .OrderBy(q => q.Id).ToList();
-
-                                        WriteLine("## Quiz Questions:");
-                                        foreach(var q in quizQuestions)
-                                        {
-                                            Clear();
-                                            WriteLine($"## Question {quizQuestions.IndexOf(q) + 1} / {quizQuestions.Count}\n");
-                                            WriteLine($"{q.QuestionText}\n");
-                                            
-                                            // Get Question Alternatives
-                                            var questionAlternatives = db.Alternatives
-                                                .Where(a => a.QuestionId == q.Id)
-                                                .OrderBy(a => a.Id).ToList();
-                                            
-                                            foreach(var a in questionAlternatives)
-                                            {
-                                                WriteLine($"[{questionAlternatives.IndexOf(a)}] {a.AlternativeText}");
-                                            }
-
-                                            WriteLine();
-                                            Write("Answer: ");
-                                            userInputString = ReadLine();
-
-                                            if (questionAlternatives[Int16.Parse(userInputString)].IsCorrect) {
-                                                WriteLine($"\n{questionAlternatives[Int16.Parse(userInputString)].AlternativeText} is the right Answer!\n");
-                                                quizScore++;
-                                            }
-                                            else 
-                                            {
-                                                WriteLine("Wrong Answer!\n");
-                                            };
-
-                                            if (quizQuestions.IndexOf(q) + 1 != quizQuestions.Count)
-                                            {
-                                                WriteLine("[Enter] Next Question");
-                                            }
-                                            else
-                                            {
-                                                WriteLine("[Enter] See Quiz Summary");
-                                            }
-                                            
-                                            ReadLine();
-                                        }
-                                        
-                                        Clear();
-                                        WriteLine("QUIZ SUMMARY\n");
-                                        WriteLine($"Quiz Score: {quizScore}/{quizQuestions.Count()}\n");
-                                        WriteLine("[Enter] Menu");
-                                        ReadLine();
-                                    }
-                                }
-                                catch
-                                {
-                                    WriteLine("Something went wrong");
-                                }
-                            } 
-
+                            QuizHandler.PlayQuiz();                            
                             break;
 
+                        // QUIZZES - 2. DELETE QUIZ
                         case ConsoleKey.D2:
-                            Clear();
-                            
-                            WriteLine("# DELETE QUIZ");
-                            WriteLine("Choose Quiz Id from the list below\n");
-                            WriteLine("## QUIZZES");
-
-                            QuizHandler.GetQuizzes();
-
-                            WriteLine("\nC. Cancel\n");
-
-                            // Ask for quiz ID
-                            userInputString = ReadLine();
-                            // QuizHandler.DeleteQuiz();
-                            if(userInputString.ToUpper() == "C")
-                            {                
-                                RunQuizApp();
-                            } 
-                            else {
-                                try {
-                                    using (var db = new QuizAppContext()) {
-                                        // Get Quiz to Remove
-                                        var quizToRemove = db.Quizzes
-                                            .Where(q => q.Id == Int16.Parse(userInputString))
-                                            .First();
-
-                                        // Get Quiz Questions to Remove
-                                        var questionsToRemove = db.Questions
-                                            .Where(q => q.QuizId == quizToRemove.Id);
-                                        
-                                        db.Remove(quizToRemove);
-                                        
-                                        // Remove every Question together with its Alternatives
-                                        foreach(var question in questionsToRemove)
-                                        {
-                                            var alternativesToRemove = db.Alternatives
-                                                .Where(a => a.QuestionId == question.Id);
-                                            
-                                            db.Remove(question);
-
-                                            foreach(var alternative in alternativesToRemove)
-                                            {
-                                                db.Remove(alternative);
-                                            }
-                                        }
-                                        
-                                        db.SaveChanges();
-                                        WriteLine("\n\nDeleting Quiz...");
-                                        Thread.Sleep(1000); 
-                                    }
-                                } 
-                                catch {
-                                    WriteLine("Something went wrong");
-                                }
-                            }
+                            QuizHandler.DeleteQuiz();  
                             break;
                         
                         case ConsoleKey.C:
@@ -216,143 +84,13 @@ namespace QuizApp
 
 
 
-                // 2. CREATE NEW QUIZ
+                // MENU - 2. CREATE NEW QUIZ
                 case ConsoleKey.NumPad2:
                 case ConsoleKey.D2:
-                // QuizHandler.CreateQuiz();
-                using (var db = new QuizAppContext()) {
-                    string quizTitle;
-
-                    // Ask for Quiz Name
-                    do
-                    {
-                        Clear();
-                        WriteLine("Create New Quiz\n");
-                        WriteLine("Quiz Name:");
-                        quizTitle = ReadLine();
-                    } while(!IsValidString(quizTitle));
-                    
-                    // Save Quiz to DB
-                    db.Add(new Quiz(quizTitle));
-                    db.SaveChanges();
-
-
-                    
-                    // CREATE NEW QUESTION
-                    int questionNum = 0;
-                    string questionText;
-                    do
-                    {
-                        // Ask for valid Question Text
-                        do
-                        {
-                            Clear();
-                            WriteLine(quizTitle + "\n");
-                            WriteLine($"Question {questionNum + 1}");
-                            questionText = ReadLine();
-                        } while(!IsValidString(questionText));
-                        
-                        // Find Quiz to add Question to
-                        var newQuiz = db.Quizzes
-                            .Where(q => q.Title == quizTitle)
-                            .First();
-
-                        // Save Question to DB
-                        newQuiz.Questions.Add(new Question(questionText));
-                        db.SaveChanges();
-                        questionNum++;
-
-
-
-                        // CREATE FOUR ALTERNATIVES
-                        int i = 0;
-                        string alternativeText;
-                        string isCorrectInput;
-                        bool isCorrect;
-                        while(i<4)
-                        {
-                            // Ask for valid Alternative Text
-                            do
-                            {
-                                Clear();
-                                WriteLine($"Quiz: {quizTitle}\n");
-                                WriteLine($"Question: {questionText}\n");
-                                WriteLine($"Alternative {i + 1}");
-                                alternativeText = ReadLine();
-                            } while(!IsValidString(alternativeText));
-
-                            // Ask for valid Boolean(Is Alternative true/false?)
-                            do
-                            {
-                                Clear();
-                                WriteLine($"Quiz: {newQuiz.Title}\n");
-                                WriteLine($"Question: {questionText}\n");
-                                WriteLine($"Alternative: {alternativeText}\n");
-                                WriteLine("Is it the correct answer?(true/false)");
-                                isCorrectInput = ReadLine();
-                            } while(!Boolean.TryParse(isCorrectInput, out isCorrect));
-
-                            // Find Question to add Alternatives to
-                            var newQuestion = db.Questions
-                                .Where(q => q.QuestionText == questionText)
-                                .First();
-
-                            // Save Alternatives to DB
-                            newQuestion.Alternatives.Add(new Alternative(alternativeText, isCorrect));
-                            db.SaveChanges();
-
-                            i++;
-                        }
-
-
-
-                        // QUESTION SUMMARY
-                        Clear();
-                        TextColor(ConsoleColor.DarkGreen);
-                        WriteLine($"# Quiz Summary: \n");
-                        ResetColor();
-                        WriteLine($"## Quiz Name: \n{quizTitle}\n");
-
-                        // Get Quiz Id and Quiz Questions
-                        var createdQuizId = db.Quizzes
-                            .Where(q => q.Title == quizTitle)
-                            .First().Id;
-
-                        var quizQuestions = db.Questions
-                                .Where(q => q.QuizId == createdQuizId)
-                                .OrderBy(q => q.Id);
-
-                        WriteLine("## Quiz Questions:");
-                        foreach(var q in quizQuestions)
-                        {
-                            WriteLine($"Question: {q.QuestionText}");
-                            
-                            // Get Question Alternatives
-                            var questionAnswers = db.Alternatives
-                                .Where(a => a.QuestionId == q.Id)
-                                .OrderBy(a => a.Id);
-                            
-                            WriteLine("\n## Question Alternatives:");
-                            foreach(var a in questionAnswers)
-                            {
-                                WriteLine($"Alternative: {a.AlternativeText}, Is Correct: {a.IsCorrect}");
-                            }
-
-                            WriteLine("");
-                        }
-
-
-
-                        // ADD NEW QUESTION OR SAVE QUIZ
-                        WriteLine("1. New Question");
-                        WriteLine("2. Save Quiz");
-                        userInputKey = ReadKey();
-                    } while(userInputKey.Key != ConsoleKey.D2);
-
-                    ReadLine();
-                }
+                    QuizHandler.CreateQuiz();
                     break;
 
+                // MENU - Q. QUIT
                 case ConsoleKey.Q:
                     Clear();
                     WriteLine("Quitting application...");
