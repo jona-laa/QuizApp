@@ -26,6 +26,18 @@ namespace Utils
 
 
         /// <summary>
+        /// Change text color
+        /// </summary>
+        public static void WriteColoredLine(string text, ConsoleColor color)
+        {
+            ForegroundColor = color;
+            WriteLine(text);
+            ResetColor();
+        }
+
+
+
+        /// <summary>
         /// Checks for valid integer, or C, when in Delete menu
         /// </summary>
         public static bool IsValidChoice(char key, int maxInput, string cancelBtn)

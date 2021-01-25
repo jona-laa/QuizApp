@@ -26,7 +26,7 @@ namespace QuizApp
                 do
                 {
                     Clear();
-                    WriteLine("Create New Quiz\n");
+                    WriteColoredLine("Create New Quiz\n", ConsoleColor.DarkGreen);
                     WriteLine("Quiz Name:");
                     quizTitle = ReadLine();
                 } while(!IsValidString(quizTitle));
@@ -107,10 +107,9 @@ namespace QuizApp
 
                     // QUESTION SUMMARY
                     Clear();
-                    TextColor(ConsoleColor.DarkGreen);
-                    WriteLine($"# Quiz Summary: \n");
-                    ResetColor();
-                    WriteLine($"## Quiz Name: \n{quizTitle}\n");
+                    WriteColoredLine($"QUIZ SUMMARY \n", ConsoleColor.DarkGreen);
+                    WriteColoredLine($"Quiz Name:", ConsoleColor.DarkGreen);
+                    WriteLine($"{quizTitle}\n");
 
                     // Get Quiz Id and Quiz Questions
                     var createdQuizId = db.Quizzes
@@ -121,17 +120,17 @@ namespace QuizApp
                             .Where(q => q.QuizId == createdQuizId)
                             .OrderBy(q => q.Id);
 
-                    WriteLine("## Quiz Questions:");
+                    WriteColoredLine("Quiz Questions:", ConsoleColor.DarkGreen);
                     foreach(var q in quizQuestions)
                     {
-                        WriteLine($"Question: {q.QuestionText}");
+                        WriteColoredLine($"Question: {q.QuestionText}", ConsoleColor.DarkYellow);
                         
                         // Get Question Alternatives
                         var questionAnswers = db.Alternatives
                             .Where(a => a.QuestionId == q.Id)
                             .OrderBy(a => a.Id);
                         
-                        WriteLine("\n## Question Alternatives:");
+                        WriteColoredLine("\nQuestion Alternatives:", ConsoleColor.DarkYellow);
                         foreach(var a in questionAnswers)
                         {
                             WriteLine($"Alternative: {a.AlternativeText}, Is Correct: {a.IsCorrect}");
@@ -146,9 +145,12 @@ namespace QuizApp
                     WriteLine("1. New Question");
                     WriteLine("2. Save Quiz");
                     userInputKey = ReadKey();
-                } while(userInputKey.Key != ConsoleKey.D2);
+                } while(userInputKey.KeyChar.ToString().ToUpper() != "2");
 
-                ReadLine();
+                Clear();
+                WriteLine("Saving Quiz...");
+                Thread.Sleep(1000);
+                RunQuizApp();
             }
         }
 
@@ -170,7 +172,8 @@ namespace QuizApp
                         return quizzes;
                     } 
                     else {
-                        WriteLine("No Quizzes at this moment. Create one!");
+                        WriteColoredLine("No Quizzes at this moment. Create one!", ConsoleColor.DarkRed);
+                        WriteLine("\n[Any Key] Menu");
                         ReadLine();
                         return null;
                     }
@@ -178,7 +181,7 @@ namespace QuizApp
             } 
             catch 
             {
-                WriteLine("Error fetching Quizzes. Press any key.");
+                WriteColoredLine("Error fetching Quizzes. Press any key.", ConsoleColor.DarkRed);
                 ReadLine();
             }
             return null;
@@ -197,23 +200,31 @@ namespace QuizApp
             do 
             {
                 Clear();
-                TextColor(ConsoleColor.DarkGreen);                    
-                WriteLine("# DELETE QUIZ");
-                WriteLine("Choose Quiz Id from the list below\n");
-                ResetColor();
+                WriteColoredLine("DELETE QUIZ\n", ConsoleColor.DarkGreen);
                 
-                WriteLine("## QUIZZES");
                 quizzes = GetQuizzes();
-                foreach(var q in quizzes) {
-                    WriteLine($"[{quizzes.IndexOf(q)}] {q.Title}");
+
+                if (quizzes != null)
+                {
+                    if (quizzes.Count != 0)
+                    {
+                        foreach(var q in quizzes) {
+                            WriteLine($"[{quizzes.IndexOf(q)}] {q.Title}");
+                        }
+                    }
+                    else
+                    {
+                        RunQuizApp();
+                    }
+                }
+                else 
+                {
+                    RunQuizApp();
                 }
 
-                TextColor(ConsoleColor.DarkRed);    
-                WriteLine("\nC. Cancel\n");
-                ResetColor();
+                WriteColoredLine("\nC. Cancel\n", ConsoleColor.DarkRed);
 
                 // Ask for quiz ID
-                // userInputString = ReadLine();
                 userInputKey = ReadKey();
             } while(!IsValidChoice(userInputKey.KeyChar, quizzes.Count - 1, "C"));
 
@@ -255,13 +266,17 @@ namespace QuizApp
                         }
                         
                         db.SaveChanges();
-                        WriteLine("\n\nDeleting Quiz...");
+                        
+                        Clear();
+                        WriteLine("Deleting Quiz...");
                         Thread.Sleep(1000); 
+                        
+                        RunQuizApp();
                     }
                 } 
                 catch 
                 {
-                    WriteLine("Something went wrong");
+                    WriteColoredLine("Something went wrong", ConsoleColor.DarkRed);
                 }
             }
         }
@@ -276,18 +291,29 @@ namespace QuizApp
 
             do {
                 Clear();
-                TextColor(ConsoleColor.DarkGreen);
-                WriteLine("Choose Quiz from the list below\n");
-                ResetColor();
+                WriteColoredLine("PLAY QUIZ\n", ConsoleColor.DarkGreen);
 
                 quizzes = QuizHandler.GetQuizzes();
-                foreach(var q in quizzes) {
-                    WriteLine($"[{quizzes.IndexOf(q)}] {q.Title}");
+   
+                if (quizzes != null)
+                {
+                    if (quizzes.Count != 0)
+                    {
+                        foreach(var q in quizzes) {
+                            WriteLine($"[{quizzes.IndexOf(q)}] {q.Title}");
+                        }
+                    }
+                    else
+                    {
+                        RunQuizApp();
+                    }
+                }
+                else 
+                {
+                    RunQuizApp();
                 }
 
-                TextColor(ConsoleColor.DarkRed);    
-                WriteLine("\nC. Cancel\n");
-                ResetColor();
+                WriteColoredLine("\nC. Cancel\n", ConsoleColor.DarkRed);
 
                 // Ask for Quiz Index
                 userInputKey = ReadKey();
@@ -321,8 +347,8 @@ namespace QuizApp
                             do
                             {
                                 Clear();
-                                WriteLine($"## Question {quizQuestions.IndexOf(q) + 1} / {quizQuestions.Count}\n");
-                                WriteLine($"{q.QuestionText}\n");
+                                WriteColoredLine($"QUESTION {quizQuestions.IndexOf(q) + 1} / {quizQuestions.Count}\n", ConsoleColor.DarkGreen);
+                                WriteColoredLine($"{q.QuestionText}\n", ConsoleColor.DarkYellow);
                                 
                                 // Get Question Alternatives
                                 questionAlternatives = db.Alternatives
@@ -334,7 +360,7 @@ namespace QuizApp
                                     WriteLine($"[{questionAlternatives.IndexOf(a)}] {a.AlternativeText}");
                                 }
 
-                                WriteLine("\nQ. Quit to Menu\n");
+                                WriteColoredLine("\nQ. Quit to Menu", ConsoleColor.DarkRed);
 
                                 // Ask for Answer
                                 WriteLine();
@@ -352,12 +378,12 @@ namespace QuizApp
 
                             // Give feedback and points
                             if (questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].IsCorrect) {
-                                WriteLine($"\n{questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].AlternativeText} is the right Answer!\n");
+                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].AlternativeText} is the Right Answer!\n", ConsoleColor.DarkGreen);
                                 quizScore++;
                             }
                             else 
                             {
-                                WriteLine("\nWrong Answer!\n");
+                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString())].AlternativeText} is the Wrong Answer!\n", ConsoleColor.DarkRed);
                             };
 
                             if (quizQuestions.IndexOf(q) + 1 != quizQuestions.Count)
@@ -366,17 +392,19 @@ namespace QuizApp
                             }
                             else
                             {
-                                WriteLine("[Enter] See Quiz Summary");
+                                WriteColoredLine("[Enter] See Quiz Summary", ConsoleColor.Green);
                             }
                             
                             ReadLine();
                         }
                         
                         Clear();
-                        WriteLine("QUIZ SUMMARY\n");
+                        WriteColoredLine("QUIZ SUMMARY\n", ConsoleColor.DarkGreen);
                         WriteLine($"Quiz Score: {quizScore}/{quizQuestions.Count()}\n");
-                        WriteLine("[Enter] Quit to Menu");
+                        WriteColoredLine("[Enter] Quit to Menu", ConsoleColor.Green);
                         ReadLine();
+
+                        RunQuizApp();
                     }
                 }
                 catch

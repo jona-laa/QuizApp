@@ -23,15 +23,10 @@ namespace QuizApp
             ConsoleKeyInfo userInputKey;
 
             Clear();
-            TextColor(ConsoleColor.DarkGreen);
-            WriteLine("C O N S O L E   Q U I Z   A P P");
-            ResetColor();    
-            WriteLine("\n# M E N U");
-            WriteLine("1. Quizzes");
+            WriteColoredLine("C O N S O L E   Q U I Z   A P P", ConsoleColor.DarkGreen);
+            WriteLine("\n1. Quizzes");
             WriteLine("2. Create New Quiz\n");
-            TextColor(ConsoleColor.DarkRed);
-            WriteLine("Q. Quit");
-            ResetColor();
+            WriteColoredLine("Q. Quit", ConsoleColor.DarkRed);
 
             userInputKey = Console.ReadKey();
             
@@ -46,15 +41,10 @@ namespace QuizApp
                     do
                     {
                         Clear();
-                        TextColor(ConsoleColor.DarkGreen);
-                        WriteLine("QUIZZES\n");
-                        ResetColor();
-                        WriteLine("# MENU");
+                        WriteColoredLine("QUIZZES\n", ConsoleColor.DarkGreen);
                         WriteLine("1. Play Quiz");
                         WriteLine("2. Delete Quiz\n");
-                        TextColor(ConsoleColor.DarkRed);
-                        WriteLine("C. Cancel");
-                        ResetColor();
+                        WriteColoredLine("C. Cancel", ConsoleColor.DarkRed);
                         userInputKey = ReadKey();
                     } while(!IsValidChoice(userInputKey.KeyChar, 2, "C"));
 
@@ -99,6 +89,7 @@ namespace QuizApp
                     break;
 
                 default:
+                    RunQuizApp();
                     break;
             }
         }
