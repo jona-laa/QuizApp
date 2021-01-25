@@ -194,7 +194,8 @@ namespace QuizApp
         /// </summary>
         public static void DeleteQuiz()
         {
-            ConsoleKeyInfo userInputKey;
+            // ConsoleKeyInfo userInputKey;
+            char userInputKey;
             List<Quiz> quizzes;
 
             do 
@@ -209,7 +210,7 @@ namespace QuizApp
                     if (quizzes.Count != 0)
                     {
                         foreach(var q in quizzes) {
-                            WriteLine($"[{quizzes.IndexOf(q)}] {q.Title}");
+                            WriteLine($"[{quizzes.IndexOf(q) + 1}] {q.Title}");
                         }
                     }
                     else
@@ -225,11 +226,11 @@ namespace QuizApp
                 WriteColoredLine("\nC. Cancel\n", ConsoleColor.DarkRed);
 
                 // Ask for quiz ID
-                userInputKey = ReadKey();
-            } while(!IsValidChoice(userInputKey.KeyChar, quizzes.Count - 1, "C"));
+                userInputKey = ReadKey().KeyChar;
+            } while(!IsValidChoice(userInputKey, quizzes.Count, "C"));
 
             // CANCEL
-            if(userInputKey.KeyChar.ToString().ToUpper() == "C")
+            if(userInputKey.ToString().ToUpper() == "C")
             {                
                 RunQuizApp();
             }
@@ -242,7 +243,7 @@ namespace QuizApp
                     {
                         // Get Quiz to Remove...
                         var quizToRemove = db.Quizzes
-                            .Where(q => q.Id == quizzes[Int16.Parse(userInputKey.KeyChar.ToString())].Id)
+                            .Where(q => q.Id == quizzes[Int16.Parse(userInputKey.ToString()) - 1].Id)
                             .First();
 
                         // ...and Quiz Questions to Remove
@@ -285,9 +286,10 @@ namespace QuizApp
 
         public static void PlayQuiz()
         {
-            ConsoleKeyInfo userInputKey;
+            char userInputKey;
             List<Quiz> quizzes;
             List<Alternative> questionAlternatives;
+            int quizScore = 0;
 
             do {
                 Clear();
@@ -316,25 +318,24 @@ namespace QuizApp
                 WriteColoredLine("\nC. Cancel\n", ConsoleColor.DarkRed);
 
                 // Ask for Quiz Index
-                userInputKey = ReadKey();
-            } while(!IsValidChoice(userInputKey.KeyChar, quizzes.Count, "C"));
+                userInputKey = ReadKey().KeyChar;
+            } while(!IsValidChoice(userInputKey, quizzes.Count, "C"));
 
             // CANCEL
-            if(userInputKey.KeyChar.ToString().ToUpper() == "C")
+            if(userInputKey.ToString().ToUpper() == "C")
             {                
                 RunQuizApp();
             }
             // RUN QUIZ
             else
             {
-                int quizScore = 0;
                 try
                 {
                     using (var db = new QuizAppContext()) 
                     {
                         // Get Quiz Id...
                         var quiz = db.Quizzes
-                            .Where(q => q.Id == quizzes[Int16.Parse(userInputKey.KeyChar.ToString()) - 1].Id)
+                            .Where(q => q.Id == quizzes[Int16.Parse(userInputKey.ToString()) - 1].Id)
                             .First();
 
                         // ...and Quiz Questions
@@ -365,10 +366,10 @@ namespace QuizApp
                                 // Ask for Answer
                                 WriteLine();
                                 Write("Answer: ");
-                                userInputKey = ReadKey();
-                            } while(!IsValidChoice(userInputKey.KeyChar, 4, "Q"));
+                                userInputKey = ReadKey().KeyChar;
+                            } while(!IsValidChoice(userInputKey, 4, "Q"));
 
-                            if (userInputKey.KeyChar.ToString().ToUpper() == "Q")
+                            if (userInputKey.ToString().ToUpper() == "Q")
                             {
                                 WriteLine("\nQuitting to Menu...");
                                 Thread.Sleep(1000);
@@ -377,13 +378,13 @@ namespace QuizApp
 
 
                             // Give feedback and points
-                            if (questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString()) - 1].IsCorrect) {
-                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString()) -1].AlternativeText} is the Right Answer!\n", ConsoleColor.DarkGreen);
+                            if (questionAlternatives[Int16.Parse(userInputKey.ToString()) - 1].IsCorrect) {
+                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.ToString()) -1].AlternativeText} is the Right Answer!\n", ConsoleColor.DarkGreen);
                                 quizScore++;
                             }
                             else 
                             {
-                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.KeyChar.ToString()) -1].AlternativeText} is the Wrong Answer!\n", ConsoleColor.DarkRed);
+                                WriteColoredLine($"\n\n {questionAlternatives[Int16.Parse(userInputKey.ToString()) -1].AlternativeText} is the Wrong Answer!\n", ConsoleColor.DarkRed);
                             };
 
                             if (quizQuestions.IndexOf(q) + 1 != quizQuestions.Count)
