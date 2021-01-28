@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 
-namespace QuizApp
+namespace QuizApp.Models
 {
     public class Question
     {
@@ -16,3 +15,4 @@ namespace QuizApp
         }
     }   
 }
+

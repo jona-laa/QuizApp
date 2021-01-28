@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using QuizApp.Models;
 
 namespace QuizApp
 {
