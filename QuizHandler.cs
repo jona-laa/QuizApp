@@ -98,7 +98,9 @@ namespace QuizApp
                             .First();
 
                         // Save Alternatives to DB
-                        newQuestion.Alternatives.Add(new Alternative(alternativeText, isCorrect));
+                        newQuestion.Alternatives.Add(
+                            new Alternative(alternativeText, isCorrect)
+                            );
                         db.SaveChanges();
 
                         i++;
@@ -149,7 +151,7 @@ namespace QuizApp
                         userInputKey = ReadKey();
                     } while (!IsValidChoice(userInputKey.KeyChar, 2, "C"));
 
-                } while(userInputKey.KeyChar.ToString().ToUpper() != "2");
+                } while(userInputKey.KeyChar.ToString().ToUpper() == "1");
 
                 Clear();
                 WriteLine("Saving Quiz...");
