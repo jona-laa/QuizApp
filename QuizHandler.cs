@@ -19,144 +19,154 @@ namespace QuizApp
         public static void CreateQuiz()
         {
             ConsoleKeyInfo userInputKey;
-
-            using (var db = new QuizAppContext()) {
-                string quizTitle;
-
-                // Ask for Quiz Name
-                do
+            
+            try
+            {
+                using (var db = new QuizAppContext()) 
                 {
-                    Clear();
-                    WriteColoredLine("Create New Quiz\n", ConsoleColor.DarkGreen);
-                    WriteLine("Quiz Name:");
-                    quizTitle = ReadLine();
-                } while(!IsValidString(quizTitle));
-                
-                // Save Quiz to DB
-                db.Add(new Quiz(quizTitle));
-                db.SaveChanges();
+                    string quizTitle;
 
-
-                
-                // CREATE NEW QUESTION
-                int questionNum = 0;
-                string questionText;
-                do
-                {
-                    // Ask for valid Question Text
+                    // Ask for Quiz Name
                     do
                     {
                         Clear();
-                        WriteLine(quizTitle + "\n");
-                        WriteLine($"Question {questionNum + 1}");
-                        questionText = ReadLine();
-                    } while(!IsValidString(questionText));
+                        WriteColoredLine("Create New Quiz\n", ConsoleColor.DarkGreen);
+                        WriteLine("Quiz Name:");
+                        quizTitle = ReadLine();
+                    } while(!IsValidString(quizTitle));
                     
-                    // Find Quiz to add Question to
-                    var newQuiz = db.Quizzes
-                        .Where(q => q.Title == quizTitle)
-                        .First();
-
-                    // Save Question to DB
-                    newQuiz.Questions.Add(new Question(questionText));
+                    // Save Quiz to DB
+                    db.Add(new Quiz(quizTitle));
                     db.SaveChanges();
-                    questionNum++;
 
 
-
-                    // CREATE FOUR ALTERNATIVES
-                    int i = 0;
-                    string alternativeText;
-                    string isCorrectInput;
-                    bool isCorrect;
-                    while(i<4)
-                    {
-                        // Ask for valid Alternative Text
-                        do
-                        {
-                            Clear();
-                            WriteLine($"Quiz: {quizTitle}\n");
-                            WriteLine($"Question: {questionText}\n");
-                            WriteLine($"Alternative {i + 1}");
-                            alternativeText = ReadLine();
-                        } while(!IsValidString(alternativeText));
-
-                        // Ask for valid Boolean(Is Alternative true/false?)
-                        do
-                        {
-                            Clear();
-                            WriteLine($"Quiz: {newQuiz.Title}\n");
-                            WriteLine($"Question: {questionText}\n");
-                            WriteLine($"Alternative: {alternativeText}\n");
-                            WriteLine("Is it the correct answer?(true/false)");
-                            isCorrectInput = ReadLine();
-                        } while(!Boolean.TryParse(isCorrectInput, out isCorrect));
-
-                        // Find Question to add Alternatives to
-                        var newQuestion = db.Questions
-                            .Where(q => q.QuestionText == questionText)
-                            .First();
-
-                        // Save Alternatives to DB
-                        newQuestion.Alternatives.Add(
-                            new Alternative(alternativeText, isCorrect)
-                            );
-                        db.SaveChanges();
-
-                        i++;
-                    }
-
-
-
-                    // QUESTION SUMMARY
-                    Clear();
-                    WriteColoredLine($"QUIZ SUMMARY \n", ConsoleColor.DarkGreen);
-                    WriteColoredLine($"Quiz Name:", ConsoleColor.DarkGreen);
-                    WriteLine($"{quizTitle}\n");
-
-                    // Get Quiz Id and Quiz Questions
-                    var createdQuizId = db.Quizzes
-                        .Where(q => q.Title == quizTitle)
-                        .First().Id;
-
-                    var quizQuestions = db.Questions
-                            .Where(q => q.QuizId == createdQuizId)
-                            .OrderBy(q => q.Id);
-
-                    WriteColoredLine("Quiz Questions:", ConsoleColor.DarkGreen);
-                    foreach(var q in quizQuestions)
-                    {
-                        WriteColoredLine($"Question: {q.QuestionText}", ConsoleColor.DarkYellow);
-                        
-                        // Get Question Alternatives
-                        var questionAnswers = db.Alternatives
-                            .Where(a => a.QuestionId == q.Id)
-                            .OrderBy(a => a.Id);
-                        
-                        WriteColoredLine("\nQuestion Alternatives:", ConsoleColor.DarkYellow);
-                        foreach(var a in questionAnswers)
-                        {
-                            WriteLine($"Alternative: {a.AlternativeText}, Is Correct: {a.IsCorrect}");
-                        }
-
-                        WriteLine("");
-                    }
-
-
-                        // ADD NEW QUESTION OR SAVE QUIZ
-                        WriteLine("1. New Question");
-                        WriteLine("2. Save Quiz");
+                    
+                    // CREATE NEW QUESTION
+                    int questionNum = 0;
+                    string questionText;
                     do
                     {
-                        userInputKey = ReadKey();
-                    } while (!IsValidChoice(userInputKey.KeyChar, 2, "C"));
+                        // Ask for valid Question Text
+                        do
+                        {
+                            Clear();
+                            WriteLine(quizTitle + "\n");
+                            WriteLine($"Question {questionNum + 1}");
+                            questionText = ReadLine();
+                        } while(!IsValidString(questionText));
+                        
+                        // Find Quiz to add Question to
+                        var newQuiz = db.Quizzes
+                            .Where(q => q.Title == quizTitle)
+                            .First();
 
-                } while(userInputKey.KeyChar.ToString().ToUpper() == "1");
+                        // Save Question to DB
+                        newQuiz.Questions.Add(new Question(questionText));
+                        db.SaveChanges();
+                        questionNum++;
 
-                Clear();
-                WriteLine("Saving Quiz...");
-                Thread.Sleep(1000);
-                RunQuizApp();
+
+
+                        // CREATE FOUR ALTERNATIVES
+                        int i = 0;
+                        string alternativeText;
+                        string isCorrectInput;
+                        bool isCorrect;
+                        while(i<4)
+                        {
+                            // Ask for valid Alternative Text
+                            do
+                            {
+                                Clear();
+                                WriteLine($"Quiz: {quizTitle}\n");
+                                WriteLine($"Question: {questionText}\n");
+                                WriteLine($"Alternative {i + 1}");
+                                alternativeText = ReadLine();
+                            } while(!IsValidString(alternativeText));
+
+                            // Ask for valid Boolean(Is Alternative true/false?)
+                            do
+                            {
+                                Clear();
+                                WriteLine($"Quiz: {newQuiz.Title}\n");
+                                WriteLine($"Question: {questionText}\n");
+                                WriteLine($"Alternative: {alternativeText}\n");
+                                WriteLine("Is it the correct answer?(true/false)");
+                                isCorrectInput = ReadLine();
+                            } while(!Boolean.TryParse(isCorrectInput, out isCorrect));
+
+                            // Find Question to add Alternatives to
+                            var newQuestion = db.Questions
+                                .Where(q => q.QuestionText == questionText)
+                                .First();
+
+                            // Save Alternatives to DB
+                            newQuestion.Alternatives.Add(
+                                new Alternative(alternativeText, isCorrect)
+                                );
+                            db.SaveChanges();
+
+                            i++;
+                        }
+
+
+
+                        // QUESTION SUMMARY
+                        Clear();
+                        WriteColoredLine($"QUIZ SUMMARY \n", ConsoleColor.DarkGreen);
+                        WriteColoredLine($"Quiz Name:", ConsoleColor.DarkGreen);
+                        WriteLine($"{quizTitle}\n");
+
+                        // Get Quiz Id and Quiz Questions
+                        var createdQuizId = db.Quizzes
+                            .Where(q => q.Title == quizTitle)
+                            .First().Id;
+
+                        var quizQuestions = db.Questions
+                                .Where(q => q.QuizId == createdQuizId)
+                                .OrderBy(q => q.Id);
+
+                        WriteColoredLine("Quiz Questions:", ConsoleColor.DarkGreen);
+                        foreach(var q in quizQuestions)
+                        {
+                            WriteColoredLine($"Question: {q.QuestionText}", ConsoleColor.DarkYellow);
+                            
+                            // Get Question Alternatives
+                            var questionAnswers = db.Alternatives
+                                .Where(a => a.QuestionId == q.Id)
+                                .OrderBy(a => a.Id);
+                            
+                            WriteColoredLine("\nQuestion Alternatives:", ConsoleColor.DarkYellow);
+                            foreach(var a in questionAnswers)
+                            {
+                                WriteLine($"Alternative: {a.AlternativeText}, Is Correct: {a.IsCorrect}");
+                            }
+
+                            WriteLine("");
+                        }
+
+
+                            // ADD NEW QUESTION OR SAVE QUIZ
+                            WriteLine("1. New Question");
+                            WriteLine("2. Save Quiz");
+                        do
+                        {
+                            userInputKey = ReadKey();
+                        } while (!IsValidChoice(userInputKey.KeyChar, 2, "C"));
+
+                    } while(userInputKey.KeyChar.ToString().ToUpper() == "1");
+
+                    Clear();
+                    WriteLine("Saving Quiz...");
+                    Thread.Sleep(1000);
+                    RunQuizApp();
+                }
+                
+            }
+            catch (System.Exception)
+            {
+                WriteLine("Something went wrong. Try again.");
+                ReadLine();
             }
         }
 

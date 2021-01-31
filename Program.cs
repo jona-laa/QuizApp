@@ -72,8 +72,6 @@ namespace QuizApp
 
                     break;
 
-
-
                 // MENU - 2. CREATE NEW QUIZ
                 case ConsoleKey.NumPad2:
                 case ConsoleKey.D2:
